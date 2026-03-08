@@ -4,7 +4,9 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.transaction.service.dto.AccountResponseDTO;
 import com.transaction.service.dto.TransactionDTO;
 import com.transaction.service.dto.TransferRequestDTO;
+import com.transaction.service.entity.TransactionHistory;
 import com.transaction.service.entity.Transactions;
+import com.transaction.service.repository.TransactionHistoryRepository;
 import com.transaction.service.repository.TransactionRepository;
 import com.transaction.service.service.TransactionService;
 import lombok.extern.slf4j.Slf4j;
@@ -30,14 +32,20 @@ import java.util.stream.Collectors;
 public class TransactionServiceImpl implements TransactionService {
 
     private final TransactionRepository transactionRepository;
+    private final TransactionHistoryRepository transactionHistoryRepository;
     private final ReplyingKafkaTemplate<String, Object, Object> replyingKafkaTemplate;
     private final ObjectMapper objectMapper;
 
     @Value("${kafka.topic.update-balance-req}")
     private String updateBalanceTopicReq;
 
-    public TransactionServiceImpl(TransactionRepository transactionRepository, ReplyingKafkaTemplate<String, Object, Object> replyingKafkaTemplate, ObjectMapper objectMapper) {
+    public TransactionServiceImpl(
+            TransactionRepository transactionRepository,
+            TransactionHistoryRepository transactionHistoryRepository,
+            ReplyingKafkaTemplate<String, Object, Object> replyingKafkaTemplate,
+            ObjectMapper objectMapper) {
         this.transactionRepository = transactionRepository;
+        this.transactionHistoryRepository = transactionHistoryRepository;
         this.replyingKafkaTemplate = replyingKafkaTemplate;
         this.objectMapper = objectMapper;
     }
@@ -57,6 +65,7 @@ public class TransactionServiceImpl implements TransactionService {
         transaction.setDateCreated(new Date());
 
         transactionRepository.saveAndFlush(transaction);
+        saveTransactionHistory(transactionId, "PENDING");
 
         try {
             TransferRequestDTO transferReq = new TransferRequestDTO(
@@ -75,17 +84,30 @@ public class TransactionServiceImpl implements TransactionService {
 
             if (response.getError() != null && !response.getError()) {
                 transaction.setStatus("SUCCESS");
+                saveTransactionHistory(transactionId, "SUCCESS");
                 log.info("Transaction {} Success!", transactionId);
             } else {
                 transaction.setStatus("FAILED");
+                saveTransactionHistory(transactionId, "FAILED");
                 log.error("Transaction {} Failed at Account Service: {}", transactionId, response.getMessage());
             }
         } catch (Exception e) {
             transaction.setStatus("FAILED");
+            saveTransactionHistory(transactionId, "FAILED");
             log.error("Error communicating with Account Service for Tx: {}", transactionId, e);
         }
 
         transactionRepository.save(transaction);
+    }
+
+    private void saveTransactionHistory(String transactionId, String status) {
+        TransactionHistory history = new TransactionHistory(
+                UUID.randomUUID().toString(),
+                transactionId,
+                status,
+                new Date()
+        );
+        transactionHistoryRepository.save(history);
     }
 
     @Override
