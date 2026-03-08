@@ -12,6 +12,7 @@ import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import com.acount.service.dto.TransferRequestDTO;
 
 @Slf4j
 public class AccountListener {
@@ -112,6 +113,26 @@ public class AccountListener {
                 return objectMapper.writeValueAsString(AccountMasterDTO.ResponseCreateAccount.builder()
                         .error(true)
                         .message("Failed to get balance: " + e.getMessage())
+                        .build());
+            } catch (Exception ex) {
+                return "{\"error\":true,\"message\":\"Failed to process error response\"}";
+            }
+        }
+    }
+
+    @KafkaListener(topics = "${kafka.topic.update-balance-req}", containerFactory = "kafkaListenerContainerFactory")
+    @SendTo
+    public String updateBalance(Map<String, Object> message) {
+        try {
+            TransferRequestDTO transferRequest = objectMapper.convertValue(message, TransferRequestDTO.class);
+            AccountMasterDTO.ResponseCreateAccount response = accountService.processTransfer(transferRequest);
+            return objectMapper.writeValueAsString(response);
+        } catch (Exception e) {
+            log.error("Failed to update balance", e);
+            try {
+                return objectMapper.writeValueAsString(AccountMasterDTO.ResponseCreateAccount.builder()
+                        .error(true)
+                        .message("Failed to update balance: " + e.getMessage())
                         .build());
             } catch (Exception ex) {
                 return "{\"error\":true,\"message\":\"Failed to process error response\"}";

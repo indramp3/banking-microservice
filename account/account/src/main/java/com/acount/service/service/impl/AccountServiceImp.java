@@ -11,6 +11,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -104,6 +105,43 @@ public class AccountServiceImp implements AccountService {
         }catch (Exception e){
             log.error("Failed to get account by NIK and Account Number", e);
             throw e;
+        }
+    }
+
+    @Override
+    @Transactional
+    public AccountMasterDTO.ResponseCreateAccount processTransfer(com.acount.service.dto.TransferRequestDTO transferRequest) {
+        log.info("Processing transfer for TX ID: {}", transferRequest.getTransactionId());
+
+        try {
+            AccountMaster debitAcc = accountMasterRepository.findById(transferRequest.getDebitAccountNumber())
+                    .orElseThrow(() -> new IllegalArgumentException("Debit Account not found"));
+
+            AccountMaster creditAcc = accountMasterRepository.findById(transferRequest.getCreditAccountNumber())
+                    .orElseThrow(() -> new IllegalArgumentException("Credit Account not found"));
+
+            if (debitAcc.getBalance().compareTo(transferRequest.getAmount()) < 0) {
+                throw new IllegalArgumentException("Insufficient balance in debit account");
+            }
+
+            // Deduct and add
+            debitAcc.setBalance(debitAcc.getBalance().subtract(transferRequest.getAmount()));
+            creditAcc.setBalance(creditAcc.getBalance().add(transferRequest.getAmount()));
+
+            accountMasterRepository.save(debitAcc);
+            accountMasterRepository.save(creditAcc);
+
+            return AccountMasterDTO.ResponseCreateAccount.builder()
+                    .error(false)
+                    .message("Transfer successful")
+                    .build();
+
+        } catch (Exception e) {
+            log.error("Failed to process transfer", e);
+            return AccountMasterDTO.ResponseCreateAccount.builder()
+                    .error(true)
+                    .message("Transfer failed: " + e.getMessage())
+                    .build();
         }
     }
 

@@ -13,4 +13,6 @@ public interface AccountService {
 
     List<AccountMaster> getByNikAndAccountNumber(AccountMasterDTO accountMasterDTO);
 
+    AccountMasterDTO.ResponseCreateAccount processTransfer(com.acount.service.dto.TransferRequestDTO transferRequest);
+
 }
