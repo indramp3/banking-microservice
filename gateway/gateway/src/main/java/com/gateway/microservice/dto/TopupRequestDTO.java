@@ -1,4 +1,4 @@
-package com.gateway.microservice.model;
+package com.gateway.microservice.dto;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;

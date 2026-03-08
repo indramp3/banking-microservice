@@ -1,6 +1,6 @@
 package com.gateway.microservice.config;
 
-import com.gateway.microservice.model.TransactionRequestDTO;
+import com.gateway.microservice.dto.TransactionRequestDTO;
 import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.apache.kafka.common.serialization.StringDeserializer;
 import org.springframework.beans.factory.annotation.Value;
@@ -43,6 +43,18 @@ public class KafkaReplyConfig {
 
     @Value("${kafka.topic.topup-transaction-resp}")
     private String topupTransactionRespTopic;
+
+    @Value("${kafka.topic.metrics-acc-resp}")
+    private String metricsAccRespTopic;
+
+    @Value("${kafka.topic.health-acc-resp}")
+    private String healthAccRespTopic;
+
+    @Value("${kafka.topic.metrics-tx-resp}")
+    private String metricsTxRespTopic;
+
+    @Value("${kafka.topic.health-tx-resp}")
+    private String healthTxRespTopic;
 
     @Bean
     public ConsumerFactory<String, String> replyConsumerFactory() {
@@ -174,6 +186,84 @@ public class KafkaReplyConfig {
             ConcurrentMessageListenerContainer<String, String> topupTransactionRepliesContainer) {
         ReplyingKafkaTemplate<String, Object, String> template =
                 new ReplyingKafkaTemplate<>(producerFactory, topupTransactionRepliesContainer);
+        template.setDefaultReplyTimeout(Duration.ofMillis(10000));
+        return template;
+    }
+
+    // --- MONITORING CONTAINERS ---
+    @Bean
+    public ConcurrentMessageListenerContainer<String, String> metricsAccRepliesContainer(
+            ConcurrentKafkaListenerContainerFactory<String, String> containerFactory) {
+        ConcurrentMessageListenerContainer<String, String> repliesContainer =
+                containerFactory.createContainer(metricsAccRespTopic);
+        repliesContainer.getContainerProperties().setGroupId(groupId + "-metrics-acc");
+        repliesContainer.setAutoStartup(false);
+        return repliesContainer;
+    }
+
+    @Bean
+    public ConcurrentMessageListenerContainer<String, String> healthAccRepliesContainer(
+            ConcurrentKafkaListenerContainerFactory<String, String> containerFactory) {
+        ConcurrentMessageListenerContainer<String, String> repliesContainer =
+                containerFactory.createContainer(healthAccRespTopic);
+        repliesContainer.getContainerProperties().setGroupId(groupId + "-health-acc");
+        repliesContainer.setAutoStartup(false);
+        return repliesContainer;
+    }
+
+    @Bean
+    public ConcurrentMessageListenerContainer<String, String> metricsTxRepliesContainer(
+            ConcurrentKafkaListenerContainerFactory<String, String> containerFactory) {
+        ConcurrentMessageListenerContainer<String, String> repliesContainer =
+                containerFactory.createContainer(metricsTxRespTopic);
+        repliesContainer.getContainerProperties().setGroupId(groupId + "-metrics-tx");
+        repliesContainer.setAutoStartup(false);
+        return repliesContainer;
+    }
+
+    @Bean
+    public ConcurrentMessageListenerContainer<String, String> healthTxRepliesContainer(
+            ConcurrentKafkaListenerContainerFactory<String, String> containerFactory) {
+        ConcurrentMessageListenerContainer<String, String> repliesContainer =
+                containerFactory.createContainer(healthTxRespTopic);
+        repliesContainer.getContainerProperties().setGroupId(groupId + "-health-tx");
+        repliesContainer.setAutoStartup(false);
+        return repliesContainer;
+    }
+
+    // --- MONITORING TEMPLATES ---
+    @Bean
+    public ReplyingKafkaTemplate<String, Object, String> metricsAccReplyingKafkaTemplate(
+            ProducerFactory<String, Object> producerFactory,
+            ConcurrentMessageListenerContainer<String, String> metricsAccRepliesContainer) {
+        ReplyingKafkaTemplate<String, Object, String> template = new ReplyingKafkaTemplate<>(producerFactory, metricsAccRepliesContainer);
+        template.setDefaultReplyTimeout(Duration.ofMillis(10000));
+        return template;
+    }
+
+    @Bean
+    public ReplyingKafkaTemplate<String, Object, String> healthAccReplyingKafkaTemplate(
+            ProducerFactory<String, Object> producerFactory,
+            ConcurrentMessageListenerContainer<String, String> healthAccRepliesContainer) {
+        ReplyingKafkaTemplate<String, Object, String> template = new ReplyingKafkaTemplate<>(producerFactory, healthAccRepliesContainer);
+        template.setDefaultReplyTimeout(Duration.ofMillis(10000));
+        return template;
+    }
+
+    @Bean
+    public ReplyingKafkaTemplate<String, Object, String> metricsTxReplyingKafkaTemplate(
+            ProducerFactory<String, Object> producerFactory,
+            ConcurrentMessageListenerContainer<String, String> metricsTxRepliesContainer) {
+        ReplyingKafkaTemplate<String, Object, String> template = new ReplyingKafkaTemplate<>(producerFactory, metricsTxRepliesContainer);
+        template.setDefaultReplyTimeout(Duration.ofMillis(10000));
+        return template;
+    }
+
+    @Bean
+    public ReplyingKafkaTemplate<String, Object, String> healthTxReplyingKafkaTemplate(
+            ProducerFactory<String, Object> producerFactory,
+            ConcurrentMessageListenerContainer<String, String> healthTxRepliesContainer) {
+        ReplyingKafkaTemplate<String, Object, String> template = new ReplyingKafkaTemplate<>(producerFactory, healthTxRepliesContainer);
         template.setDefaultReplyTimeout(Duration.ofMillis(10000));
         return template;
     }

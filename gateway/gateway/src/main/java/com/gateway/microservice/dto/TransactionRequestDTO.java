@@ -1,4 +1,4 @@
-package com.gateway.microservice.model;
+package com.gateway.microservice.dto;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.*;

@@ -1,7 +1,7 @@
 package com.gateway.microservice.producer;
 
 import com.gateway.microservice.dto.GetAccountDTO;
-import com.gateway.microservice.model.TransactionRequestDTO;
+import com.gateway.microservice.dto.TransactionRequestDTO;
 import org.apache.kafka.clients.producer.ProducerConfig;
 import org.apache.kafka.common.serialization.StringSerializer;
 import org.springframework.beans.factory.annotation.Configurable;
