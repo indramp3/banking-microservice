@@ -34,26 +34,26 @@ public class AccountController {
     @Value("${kafka.topic.get-account-balance-req}")
     private String getBalanceTopicRequest;
 
-    private final ReplyingKafkaTemplate<String, GetAccountDTO.Request, String> createAccountRequestReplyKafkaTemplate;
-    private final ReplyingKafkaTemplate<String, GetAccountDTO.Request, String> getAccountRequestReplyKafkaTemplate;
-    private final ReplyingKafkaTemplate<String, GetAccountDTO.Request, String> getBalanceRequestReplyKafkaTemplate;
+    private final ReplyingKafkaTemplate<String, Object, String> createAccountRequestReplyKafkaTemplate;
+    private final ReplyingKafkaTemplate<String, Object, String> getAccountRequestReplyKafkaTemplate;
+    private final ReplyingKafkaTemplate<String, Object, String> getBalanceRequestReplyKafkaTemplate;
 
     @Autowired
-    public AccountController(ReplyingKafkaTemplate<String, GetAccountDTO.Request, String> insertAccountRequestReplyKafkaTemplate,
-                             ReplyingKafkaTemplate<String, GetAccountDTO.Request, String> getAccountRequestReplyKafkaTemplate,
-                             ReplyingKafkaTemplate<String, GetAccountDTO.Request, String> getBalanceRequestReplyKafkaTemplate) {
-        this.createAccountRequestReplyKafkaTemplate = insertAccountRequestReplyKafkaTemplate;
+    public AccountController(ReplyingKafkaTemplate<String, Object, String> createAccountRequestReplyKafkaTemplate,
+                             ReplyingKafkaTemplate<String, Object, String> getAccountRequestReplyKafkaTemplate,
+                             ReplyingKafkaTemplate<String, Object, String> getBalanceRequestReplyKafkaTemplate) {
+        this.createAccountRequestReplyKafkaTemplate = createAccountRequestReplyKafkaTemplate;
         this.getAccountRequestReplyKafkaTemplate = getAccountRequestReplyKafkaTemplate;
         this.getBalanceRequestReplyKafkaTemplate = getBalanceRequestReplyKafkaTemplate;
     }
 
     @PostMapping("/create")
     public ResponseEntity<BaseResponse> addAccount(
-            @RequestBody GetAccountDTO.Request request
+            @RequestBody com.gateway.microservice.dto.CreateAccountRequestDTO request
     ) throws ExecutionException, InterruptedException, TimeoutException, JsonProcessingException {
         log.info("Create New Account");
-        ProducerRecord<String, GetAccountDTO.Request> pr = new ProducerRecord<>(createAccountTopicRequest, request);
-        RequestReplyFuture<String, GetAccountDTO.Request, String> future = createAccountRequestReplyKafkaTemplate.sendAndReceive(pr);
+        ProducerRecord<String, Object> pr = new ProducerRecord<>(createAccountTopicRequest, request);
+        RequestReplyFuture<String, Object, String> future = createAccountRequestReplyKafkaTemplate.sendAndReceive(pr);
         ConsumerRecord<String, String> consumerRecord = future.get(5, TimeUnit.MINUTES);
         return ok().body(new ObjectMapper().readValue(consumerRecord.value(), BaseResponse.class));
     }
@@ -67,17 +67,17 @@ public class AccountController {
     ) throws ExecutionException, InterruptedException, TimeoutException, JsonProcessingException {
         log.info("Get Account");
 
-        if (page == null) page = 1;
+        if (page == null || page < 1) page = 1;
         if (maxRow == null) maxRow = 10;
 
         GetAccountDTO.Request request = new GetAccountDTO.Request();
         request.setNik(nik);
         request.setAccountNumber(accountNumber);
-        request.setPage(page);
+        request.setPage(page - 1);
         request.setMaxRow(maxRow);
 
-        ProducerRecord<String, GetAccountDTO.Request> producerRecord = new ProducerRecord<>(getAccountTopicRequest, request);
-        RequestReplyFuture<String, GetAccountDTO.Request, String> future = getAccountRequestReplyKafkaTemplate.sendAndReceive(producerRecord);
+        ProducerRecord<String, Object> producerRecord = new ProducerRecord<>(getAccountTopicRequest, request);
+        RequestReplyFuture<String, Object, String> future = getAccountRequestReplyKafkaTemplate.sendAndReceive(producerRecord);
         ConsumerRecord<String, String> consumerRecord = future.get(5, TimeUnit.MINUTES);
         return ok().body(new ObjectMapper().readValue(consumerRecord.value(), BaseResponse.class));
     }
@@ -92,8 +92,8 @@ public class AccountController {
         GetAccountDTO.Request request = new GetAccountDTO.Request();
         request.setAccountNumber(accountNumber);
 
-        ProducerRecord<String, GetAccountDTO.Request> producerRecord = new ProducerRecord<>(getBalanceTopicRequest, request);
-        RequestReplyFuture<String, GetAccountDTO.Request, String> future = getBalanceRequestReplyKafkaTemplate.sendAndReceive(producerRecord);
+        ProducerRecord<String, Object> producerRecord = new ProducerRecord<>(getBalanceTopicRequest, request);
+        RequestReplyFuture<String, Object, String> future = getBalanceRequestReplyKafkaTemplate.sendAndReceive(producerRecord);
         ConsumerRecord<String, String> consumerRecord = future.get(5, TimeUnit.MINUTES);
         return ok().body(new ObjectMapper().readValue(consumerRecord.value(), BaseResponse.class));
     }

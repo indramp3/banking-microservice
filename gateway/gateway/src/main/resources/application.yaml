@@ -1,11 +1,14 @@
+server:
+  port: 8080
+
 spring:
   application:
-    name: microservice
+    name: gateway-microservice
 
 kafka:
-  bootstrapAddress: "localhost:9092:"
+  bootstrapAddress: "localhost:9092"
   consumer:
-    groud: "gateway"
+    group: "gateway"
   topic:
     get-account-req: "get-account-request"
     get-account-resp: "get-account-response"
@@ -14,6 +17,6 @@ kafka:
     create-account-req: "create-account-request"
     create-account-resp: "create-account-response"
     create-transaction-req: "create-transaction-request"
-    create-transaction-resp: "create-transaction-respose"
+    create-transaction-resp: "create-transaction-response"
     get-transaction-req: "get-transaction-request"
     get-transaction-resp: "get-transaction-response"
