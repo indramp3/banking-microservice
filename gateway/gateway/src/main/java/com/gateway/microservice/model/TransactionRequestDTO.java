@@ -3,6 +3,7 @@ package com.gateway.microservice.model;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.*;
 
+import java.math.BigDecimal;
 import java.util.Date;
 
 @Getter
@@ -24,9 +25,9 @@ public class TransactionRequestDTO {
     @NoArgsConstructor
     @AllArgsConstructor
     public static class RequestTransaction {
-        private Integer creditAccountNumber;
-        private Integer debitAccountNumber;
-        private Integer amount;
+        private String creditAccountNumber;
+        private String debitAccountNumber;
+        private BigDecimal amount;
         private String currency;
     }
 }
