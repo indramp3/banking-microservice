@@ -15,4 +15,6 @@ public interface AccountService {
 
     AccountMasterDTO.ResponseCreateAccount processTransfer(com.acount.service.dto.TransferRequestDTO transferRequest);
 
+    AccountMasterDTO.ResponseCreateAccount processTopup(com.acount.service.dto.TopupRequestDTO topupRequest);
+
 }

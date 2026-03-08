@@ -30,3 +30,5 @@ kafka:
     get-account-balance-resp: "get-account-balance-response"
     update-balance-req: "update-balance-request"
     update-balance-resp: "update-balance-response"
+    topup-account-req: "topup-account-request"
+    topup-account-resp: "topup-account-response"

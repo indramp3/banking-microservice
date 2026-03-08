@@ -145,6 +145,33 @@ public class AccountServiceImp implements AccountService {
         }
     }
 
+    @Override
+    @Transactional
+    public AccountMasterDTO.ResponseCreateAccount processTopup(com.acount.service.dto.TopupRequestDTO topupRequest) {
+        log.info("Processing topup for TX ID: {}", topupRequest.getTransactionId());
+
+        try {
+            AccountMaster acc = accountMasterRepository.findById(topupRequest.getAccountNumber())
+                    .orElseThrow(() -> new IllegalArgumentException("Account not found"));
+
+            // Add amount
+            acc.setBalance(acc.getBalance().add(topupRequest.getAmount()));
+            accountMasterRepository.save(acc);
+
+            return AccountMasterDTO.ResponseCreateAccount.builder()
+                    .error(false)
+                    .message("Topup successful")
+                    .build();
+
+        } catch (Exception e) {
+            log.error("Failed to process topup", e);
+            return AccountMasterDTO.ResponseCreateAccount.builder()
+                    .error(true)
+                    .message("Topup failed: " + e.getMessage())
+                    .build();
+        }
+    }
+
 
     private String generateAccountNumber() {
         return LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMddHHmmss"));
@@ -158,4 +185,5 @@ public class AccountServiceImp implements AccountService {
 
         return "%" + value + "%";
     }
+
 }

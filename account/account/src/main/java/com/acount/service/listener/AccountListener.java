@@ -139,4 +139,24 @@ public class AccountListener {
             }
         }
     }
+
+    @KafkaListener(topics = "${kafka.topic.topup-account-req}", containerFactory = "kafkaListenerContainerFactory")
+    @SendTo
+    public String topupAccount(Map<String, Object> message) {
+        try {
+            TopupRequestDTO topupRequest = objectMapper.convertValue(message, TopupRequestDTO.class);
+            AccountMasterDTO.ResponseCreateAccount response = accountService.processTopup(topupRequest);
+            return objectMapper.writeValueAsString(response);
+        } catch (Exception e) {
+            log.error("Failed to process topup", e);
+            try {
+                return objectMapper.writeValueAsString(AccountMasterDTO.ResponseCreateAccount.builder()
+                        .error(true)
+                        .message("Failed to process topup: " + e.getMessage())
+                        .build());
+            } catch (Exception ex) {
+                return "{\"error\":true,\"message\":\"Failed to process error response\"}";
+            }
+        }
+    }
 }
