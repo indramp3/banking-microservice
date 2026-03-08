@@ -1,5 +1,6 @@
 package com.gateway.microservice.config;
 
+import com.gateway.microservice.model.TransactionRequestDTO;
 import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.apache.kafka.common.serialization.StringDeserializer;
 import org.springframework.beans.factory.annotation.Value;
@@ -33,6 +34,15 @@ public class KafkaReplyConfig {
 
     @Value("${kafka.topic.get-account-balance-resp}")
     private String getBalanceRespTopic;
+
+    @Value("${kafka.topic.create-transaction-resp}")
+    private String createTransactionRespTopic;
+
+    @Value("${kafka.topic.get-transaction-resp}")
+    private String getTransactionRespTopic;
+
+    @Value("${kafka.topic.topup-transaction-resp}")
+    private String topupTransactionRespTopic;
 
     @Bean
     public ConsumerFactory<String, String> replyConsumerFactory() {
@@ -104,6 +114,66 @@ public class KafkaReplyConfig {
             ProducerFactory<String, Object> producerFactory,
             ConcurrentMessageListenerContainer<String, String> getBalanceRepliesContainer) {
         ReplyingKafkaTemplate<String, Object, String> template = new ReplyingKafkaTemplate<>(producerFactory, getBalanceRepliesContainer);
+        template.setDefaultReplyTimeout(Duration.ofMillis(10000));
+        return template;
+    }
+
+    @Bean
+    public ConcurrentMessageListenerContainer<String, String> createTransactionRepliesContainer(
+            ConcurrentKafkaListenerContainerFactory<String, String> containerFactory) {
+        ConcurrentMessageListenerContainer<String, String> repliesContainer =
+                containerFactory.createContainer(createTransactionRespTopic);
+        repliesContainer.getContainerProperties().setGroupId(groupId + "-create-tx");
+        repliesContainer.setAutoStartup(false);
+        return repliesContainer;
+    }
+
+    @Bean
+    public ReplyingKafkaTemplate<String, TransactionRequestDTO.RequestTransaction, String> createTransactionRequestReplyKafkaTemplate(
+            ProducerFactory<String, TransactionRequestDTO.RequestTransaction> producerFactory,
+            ConcurrentMessageListenerContainer<String, String> createTransactionRepliesContainer) {
+        ReplyingKafkaTemplate<String, TransactionRequestDTO.RequestTransaction, String> template =
+                new ReplyingKafkaTemplate<>(producerFactory, createTransactionRepliesContainer);
+        template.setDefaultReplyTimeout(Duration.ofMillis(10000));
+        return template;
+    }
+
+    @Bean
+    public ConcurrentMessageListenerContainer<String, String> getTransactionRepliesContainer(
+            ConcurrentKafkaListenerContainerFactory<String, String> containerFactory) {
+        ConcurrentMessageListenerContainer<String, String> repliesContainer =
+                containerFactory.createContainer(getTransactionRespTopic);
+        repliesContainer.getContainerProperties().setGroupId(groupId + "-get-tx");
+        repliesContainer.setAutoStartup(false);
+        return repliesContainer;
+    }
+
+    @Bean
+    public ReplyingKafkaTemplate<String, TransactionRequestDTO, String> getTransactionRequestReplyKafkaTemplate(
+            ProducerFactory<String, TransactionRequestDTO> producerFactory,
+            ConcurrentMessageListenerContainer<String, String> getTransactionRepliesContainer) {
+        ReplyingKafkaTemplate<String, TransactionRequestDTO, String> template =
+                new ReplyingKafkaTemplate<>(producerFactory, getTransactionRepliesContainer);
+        template.setDefaultReplyTimeout(Duration.ofMillis(10000));
+        return template;
+    }
+
+    @Bean
+    public ConcurrentMessageListenerContainer<String, String> topupTransactionRepliesContainer(
+            ConcurrentKafkaListenerContainerFactory<String, String> containerFactory) {
+        ConcurrentMessageListenerContainer<String, String> repliesContainer =
+                containerFactory.createContainer(topupTransactionRespTopic);
+        repliesContainer.getContainerProperties().setGroupId(groupId + "-topup");
+        repliesContainer.setAutoStartup(false);
+        return repliesContainer;
+    }
+
+    @Bean
+    public ReplyingKafkaTemplate<String, Object, String> topupTransactionRequestReplyKafkaTemplate(
+            ProducerFactory<String, Object> producerFactory,
+            ConcurrentMessageListenerContainer<String, String> topupTransactionRepliesContainer) {
+        ReplyingKafkaTemplate<String, Object, String> template =
+                new ReplyingKafkaTemplate<>(producerFactory, topupTransactionRepliesContainer);
         template.setDefaultReplyTimeout(Duration.ofMillis(10000));
         return template;
     }
