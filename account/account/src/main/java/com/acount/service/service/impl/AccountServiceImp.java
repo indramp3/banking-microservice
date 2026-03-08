@@ -75,9 +75,9 @@ public class AccountServiceImp implements AccountService {
             log.info("Account created successfully for NIK: {}", requestCreateAccount.getNik());
 
             AccountMasterDTO.DataResp dataResp = AccountMasterDTO.DataResp.builder()
-                    .id(null) // bisa isi ID entity kalau ada, misal accountMaster.getId()
+                    .id(null)
                     .name(accountMaster.getCustomerName())
-                    .price(accountMaster.getBalance().intValue()) // convert BigDecimal ke Integer
+                    .price(accountMaster.getBalance())
                     .build();
 
             return new AccountMasterDTO.ResponseCreateAccount(false, "Account created successfully", dataResp, null);

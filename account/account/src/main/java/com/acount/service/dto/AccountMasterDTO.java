@@ -49,6 +49,6 @@ public class AccountMasterDTO {
     public static class DataResp implements Serializable {
         private Integer id;
         private String name;
-        private Integer price;
+        private BigDecimal price;
     }
 }
