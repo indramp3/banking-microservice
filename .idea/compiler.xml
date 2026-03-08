@@ -2,7 +2,7 @@
 <project version="4">
   <component name="CompilerConfiguration">
     <annotationProcessing>
-      <profile name="Annotation profile for microservice" enabled="true">
+      <profile name="Annotation profile for monitoring" enabled="true">
         <sourceOutputDir name="target/generated-sources/annotations" />
         <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
         <outputRelativeToContentRoot value="true" />
@@ -10,20 +10,22 @@
           <entry name="$MAVEN_REPOSITORY$/org/projectlombok/lombok/1.18.42/lombok-1.18.42.jar" />
         </processorPath>
         <module name="service (1) (com.transaction)" />
+        <module name="service (2) (com.transaction)" />
+        <module name="monitoring" />
+        <module name="service (1) (com.acount)" />
         <module name="microservice" />
         <module name="service" />
       </profile>
     </annotationProcessing>
-    <bytecodeTargetLevel>
-      <module name="service (1) (com.acount)" target="21" />
-    </bytecodeTargetLevel>
   </component>
   <component name="JavacSettings">
     <option name="ADDITIONAL_OPTIONS_OVERRIDE">
       <module name="microservice" options="-parameters" />
+      <module name="monitoring" options="-parameters" />
       <module name="service" options="-parameters" />
       <module name="service (1) (com.acount)" options="-parameters" />
       <module name="service (1) (com.transaction)" options="-parameters" />
+      <module name="service (2) (com.transaction)" options="-parameters" />
     </option>
   </component>
 </project>

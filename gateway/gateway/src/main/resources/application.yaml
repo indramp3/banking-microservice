@@ -4,3 +4,16 @@ spring:
 
 kafka:
   bootstrapAddress: "localhost:9092:"
+  consumer:
+    groud: "gateway"
+  topic:
+    get-account-req: "get-account-request"
+    get-account-resp: "get-account-response"
+    get-account-balance-req: "get-account-balance-request"
+    get-account-balance-resp: "get-account-balance-response"
+    create-account-req: "create-account-request"
+    create-account-resp: "create-account-response"
+    create-transaction-req: "create-transaction-request"
+    create-transaction-resp: "create-transaction-respose"
+    get-transaction-req: "get-transaction-request"
+    get-transaction-resp: "get-transaction-response"

@@ -10,6 +10,7 @@
         <option value="$PROJECT_DIR$/gateway/gateway/pom.xml" />
         <option value="$PROJECT_DIR$/account/account/pom.xml" />
         <option value="$PROJECT_DIR$/transaction/transaction/pom.xml" />
+        <option value="$PROJECT_DIR$/monitoring/monitoring/pom.xml" />
       </list>
     </option>
   </component>
