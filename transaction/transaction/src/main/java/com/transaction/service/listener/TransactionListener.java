@@ -1,9 +1,7 @@
 package com.transaction.service.listener;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.transaction.service.dto.AccountResponseDTO;
-import com.transaction.service.dto.TopupRequestDTO;
-import com.transaction.service.dto.TransactionDTO;
+import com.transaction.service.dto.*;
 import com.transaction.service.service.TransactionService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.kafka.annotation.KafkaListener;
@@ -118,6 +116,57 @@ public class TransactionListener {
                         .build());
             } catch (Exception ex) {
                 return "{\"error\":true,\"message\":\"Critical error\"}";
+            }
+        }
+    }
+
+    @KafkaListener(topics = "${kafka.topic.metrics-tx-req}", containerFactory = "kafkaListenerContainerFactory")
+    @SendTo
+    public String getTransactionMetrics(Map<String, Object> message) {
+        try {
+            TransactionMetricsDTO response = transactionService.getMetrics();
+            return objectMapper.writeValueAsString(response);
+        } catch (Exception e) {
+            log.error("Failed to get transaction metrics from kafka listener", e);
+            try {
+                return objectMapper.writeValueAsString(TransactionMetricsDTO.builder()
+                        .error(true)
+                        .message("Critical error getting transaction metrics: " + e.getMessage())
+                        .build());
+            } catch (Exception ex) {
+                return "{\"error\":true,\"message\":\"Critical system failure\"}";
+            }
+        }
+    }
+
+    @KafkaListener(topics = "${kafka.topic.health-tx-req}", containerFactory = "kafkaListenerContainerFactory")
+    @SendTo
+    public String getHealthPing(Map<String, Object> message) {
+        try {
+            Long timestampSent = null;
+            if (message.containsKey("timestampSent")) {
+                timestampSent = message.get("timestampSent") instanceof Number ?
+                        ((Number) message.get("timestampSent")).longValue() : null;
+            }
+
+            HealthResponseDTO response = transactionService.checkHealth();
+            if (timestampSent != null) {
+                response.setTimestampSent(timestampSent);
+            }
+            response.setTimestampReceived(System.currentTimeMillis());
+
+            return objectMapper.writeValueAsString(response);
+        } catch (Exception e) {
+            log.error("Error processing health ping", e);
+            try {
+                return objectMapper.writeValueAsString(HealthResponseDTO.builder()
+                        .serviceName("TransactionService")
+                        .status("ERROR")
+                        .error(true)
+                        .message(e.getMessage())
+                        .build());
+            } catch (Exception ex) {
+                return "{\"error\":true,\"status\":\"ERROR\"}";
             }
         }
     }

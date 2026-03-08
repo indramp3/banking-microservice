@@ -1,9 +1,7 @@
 package com.transaction.service.service.impl;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.transaction.service.dto.AccountResponseDTO;
-import com.transaction.service.dto.TransactionDTO;
-import com.transaction.service.dto.TransferRequestDTO;
+import com.transaction.service.dto.*;
 import com.transaction.service.entity.TransactionHistory;
 import com.transaction.service.entity.Transactions;
 import com.transaction.service.repository.TransactionHistoryRepository;
@@ -34,19 +32,24 @@ public class TransactionServiceImpl implements TransactionService {
     private final TransactionRepository transactionRepository;
     private final TransactionHistoryRepository transactionHistoryRepository;
     private final ReplyingKafkaTemplate<String, Object, Object> replyingKafkaTemplate;
+    private final ReplyingKafkaTemplate<String, Object, Object> topupReplyingKafkaTemplate;
     private final ObjectMapper objectMapper;
 
     @Value("${kafka.topic.update-balance-req}")
     private String updateBalanceTopicReq;
 
+    @Value("${kafka.topic.topup-account-req}")
+    private String topupAccountTopicReq;
+
     public TransactionServiceImpl(
             TransactionRepository transactionRepository,
             TransactionHistoryRepository transactionHistoryRepository,
-            ReplyingKafkaTemplate<String, Object, Object> replyingKafkaTemplate,
+            ReplyingKafkaTemplate<String, Object, Object> replyingKafkaTemplate, ReplyingKafkaTemplate<String, Object, Object> topupReplyingKafkaTemplate,
             ObjectMapper objectMapper) {
         this.transactionRepository = transactionRepository;
         this.transactionHistoryRepository = transactionHistoryRepository;
         this.replyingKafkaTemplate = replyingKafkaTemplate;
+        this.topupReplyingKafkaTemplate = topupReplyingKafkaTemplate;
         this.objectMapper = objectMapper;
     }
 
@@ -174,6 +177,39 @@ public class TransactionServiceImpl implements TransactionService {
         }
 
         transactionRepository.save(transaction);
+    }
+
+    @Override
+    public TransactionMetricsDTO getMetrics() {
+        log.info("Fetching Transaction Metrics");
+        try {
+            long count = transactionRepository.countSuccessfulTransactions();
+            java.math.BigDecimal sum = transactionRepository.sumSuccessfulTransactionVolume();
+            if (sum == null) sum = java.math.BigDecimal.ZERO;
+
+            return TransactionMetricsDTO.builder()
+                    .totalSuccessfulTransactions(count)
+                    .totalTransactionVolume(sum)
+                    .error(false)
+                    .message("Success")
+                    .build();
+        } catch (Exception e) {
+            log.error("Failed to fetch transaction metrics", e);
+            return TransactionMetricsDTO.builder()
+                    .error(true)
+                    .message("Failed to retrieve metrics: " + e.getMessage())
+                    .build();
+        }
+    }
+
+    @Override
+    public HealthResponseDTO checkHealth() {
+        return HealthResponseDTO.builder()
+                .serviceName("TransactionService")
+                .status("UP")
+                .error(false)
+                .message("TransactionService is healthy")
+                .build();
     }
 
     private TransactionDTO mapToDTO(Transactions entity) {

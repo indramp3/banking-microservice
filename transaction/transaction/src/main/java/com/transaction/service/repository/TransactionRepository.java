@@ -8,6 +8,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
+import java.math.BigDecimal;
 import java.util.Date;
 
 @Repository
@@ -17,4 +18,10 @@ public interface TransactionRepository extends JpaRepository<Transactions, Strin
     Page<Transactions> findByAccountNumber(@Param("account") String account, Pageable pageable);
 
     Page<Transactions> findByDateCreatedBetween(Date startDate, Date endDate, Pageable pageable);
+
+    @Query("SELECT COUNT(t) FROM Transactions t WHERE t.status = 'SUCCESS'")
+    long countSuccessfulTransactions();
+
+    @Query("SELECT SUM(t.amount) FROM Transactions t WHERE t.status = 'SUCCESS'")
+    BigDecimal sumSuccessfulTransactionVolume();
 }

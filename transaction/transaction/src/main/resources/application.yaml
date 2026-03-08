@@ -31,3 +31,7 @@ kafka:
     topup-account-req: "topup-account-request"
     topup-account-resp: "topup-account-response"
     topup-transaction-req: "topup-transaction-request"
+    metrics-tx-req: "metrics-tx-request"
+    metrics-tx-resp: "metrics-tx-response"
+    health-tx-req: "health-tx-request"
+    health-tx-resp: "health-tx-response"
