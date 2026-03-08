@@ -1,3 +1,30 @@
+server:
+  port: 8082
+
 spring:
   application:
     name: transaction-service
+  datasource:
+    url: jdbc:mysql://127.0.0.1:3306/demo_bank?createDatabaseIfNotExist=true
+    username: root
+    password: root
+    driver-class-name: com.mysql.cj.jdbc.Driver
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.MySQLDialect
+
+kafka:
+  bootstrapAddress: "localhost:9092"
+  consumer:
+    group: "transaction"
+  topic:
+    create-transaction-req: "create-transaction-request"
+    create-transaction-resp: "create-transaction-response"
+    get-transaction-req: "get-transaction-request"
+    get-transaction-resp: "get-transaction-response"
+    update-balance-req: "update-balance-request"
+    update-balance-resp: "update-balance-response"

@@ -25,10 +25,10 @@ public class Transactions {
     private String transactionId;
 
     @Column(name = "CREDIT_ACCOUNT")
-    private Integer creditAccountNumber;
+    private String creditAccountNumber;
 
     @Column(name = "DEBIT_ACCOUNT")
-    private Integer debitAccountNumber;
+    private String debitAccountNumber;
 
     @Column(name = "AMOUNT")
     private BigDecimal amount;

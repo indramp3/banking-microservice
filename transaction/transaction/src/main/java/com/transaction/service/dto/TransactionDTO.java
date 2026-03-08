@@ -15,8 +15,8 @@ import java.util.Date;
 public class TransactionDTO {
 
     private String transactionId;
-    private Integer creditAccountNumber;
-    private Integer debitAccountNumber;
+    private String creditAccountNumber;
+    private String debitAccountNumber;
     private BigDecimal amount;
     private String currency;
     private String status;
@@ -27,8 +27,8 @@ public class TransactionDTO {
     @NoArgsConstructor
     @AllArgsConstructor
     public static class RequestTransaction {
-        private Integer creditAccountNumber;
-        private Integer debitAccountNumber;
+        private String creditAccountNumber;
+        private String debitAccountNumber;
         private BigDecimal amount;
         private String currency;
     }
