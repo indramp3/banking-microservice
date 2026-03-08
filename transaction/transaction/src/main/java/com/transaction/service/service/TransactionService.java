@@ -14,4 +14,6 @@ public interface TransactionService {
     List<TransactionDTO> getTransactionsByAccount(String accountNumber, int page, int maxRow);
 
     List<TransactionDTO> getTransactionHistory(Date startDate, Date endDate, int page, int maxRow);
+
+    void topupTransaction(com.transaction.service.dto.TopupRequestDTO topupRequest);
 }

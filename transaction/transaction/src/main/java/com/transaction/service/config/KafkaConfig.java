@@ -28,7 +28,10 @@ public class KafkaConfig {
     private String groupId;
 
     @Value("${kafka.topic.update-balance-resp}")
-    private String updateBalanceRespTopic;
+    private String updateBalanceTopicResp;
+
+    @Value("${kafka.topic.topup-account-resp}")
+    private String topupAccountTopicResp;
 
     @Bean
     public ConsumerFactory<String, Object> consumerFactory() {
@@ -72,16 +75,38 @@ public class KafkaConfig {
                 new ConcurrentKafkaListenerContainerFactory<>();
         factory.setConsumerFactory(consumerFactory());
         ConcurrentMessageListenerContainer<String, Object> repliesContainer =
-                factory.createContainer(updateBalanceRespTopic);
-        repliesContainer.getContainerProperties().setGroupId(groupId + "-balance-reply");
+                factory.createContainer(updateBalanceTopicResp);
+        repliesContainer.getContainerProperties().setGroupId(groupId + "-reply");
         repliesContainer.setAutoStartup(false);
         return repliesContainer;
     }
 
     @Bean
-    public ReplyingKafkaTemplate<String, Object, Object> repTemplate() {
-        ReplyingKafkaTemplate<String, Object, Object> template =
-                new ReplyingKafkaTemplate<>(producerFactory(), updateBalanceRepliesContainer());
+    public ConcurrentMessageListenerContainer<String, Object> topupAccountRepliesContainer() {
+        ConcurrentKafkaListenerContainerFactory<String, Object> factory =
+                new ConcurrentKafkaListenerContainerFactory<>();
+        factory.setConsumerFactory(consumerFactory());
+        ConcurrentMessageListenerContainer<String, Object> repliesContainer =
+                factory.createContainer(topupAccountTopicResp);
+        repliesContainer.getContainerProperties().setGroupId(groupId + "-topup-reply");
+        repliesContainer.setAutoStartup(false);
+        return repliesContainer;
+    }
+
+    @Bean
+    public ReplyingKafkaTemplate<String, Object, Object> replyingKafkaTemplate(
+            ProducerFactory<String, Object> producerFactory,
+            ConcurrentMessageListenerContainer<String, Object> updateBalanceRepliesContainer) {
+        ReplyingKafkaTemplate<String, Object, Object> template = new ReplyingKafkaTemplate<>(producerFactory, updateBalanceRepliesContainer);
+        template.setDefaultReplyTimeout(Duration.ofMillis(10000));
+        return template;
+    }
+
+    @Bean
+    public ReplyingKafkaTemplate<String, Object, Object> topupReplyingKafkaTemplate(
+            ProducerFactory<String, Object> producerFactory,
+            ConcurrentMessageListenerContainer<String, Object> topupAccountRepliesContainer) {
+        ReplyingKafkaTemplate<String, Object, Object> template = new ReplyingKafkaTemplate<>(producerFactory, topupAccountRepliesContainer);
         template.setDefaultReplyTimeout(Duration.ofMillis(10000));
         return template;
     }

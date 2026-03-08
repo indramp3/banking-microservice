@@ -2,6 +2,7 @@ package com.transaction.service.listener;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.transaction.service.dto.AccountResponseDTO;
+import com.transaction.service.dto.TopupRequestDTO;
 import com.transaction.service.dto.TransactionDTO;
 import com.transaction.service.service.TransactionService;
 import lombok.extern.slf4j.Slf4j;
@@ -89,6 +90,31 @@ public class TransactionListener {
                 return objectMapper.writeValueAsString(AccountResponseDTO.builder()
                         .error(true)
                         .message("Failed to get transactions: " + e.getMessage())
+                        .build());
+            } catch (Exception ex) {
+                return "{\"error\":true,\"message\":\"Critical error\"}";
+            }
+        }
+    }
+
+    @KafkaListener(topics = "${kafka.topic.topup-transaction-req}", containerFactory = "kafkaListenerContainerFactory")
+    @SendTo
+    public String handleTopupTransaction(Map<String, Object> message) {
+        try {
+            TopupRequestDTO request = objectMapper.convertValue(message, TopupRequestDTO.class);
+            transactionService.topupTransaction(request);
+
+            AccountResponseDTO response = AccountResponseDTO.builder()
+                    .error(false)
+                    .message("Topup processing completed")
+                    .build();
+            return objectMapper.writeValueAsString(response);
+        } catch (Exception e) {
+            log.error("Failed to parse topup request", e);
+            try {
+                return objectMapper.writeValueAsString(AccountResponseDTO.builder()
+                        .error(true)
+                        .message("Failed to process topup: " + e.getMessage())
                         .build());
             } catch (Exception ex) {
                 return "{\"error\":true,\"message\":\"Critical error\"}";

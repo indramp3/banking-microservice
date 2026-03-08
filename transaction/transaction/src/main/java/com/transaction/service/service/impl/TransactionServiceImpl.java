@@ -131,6 +131,51 @@ public class TransactionServiceImpl implements TransactionService {
         return transactionsPage.stream().map(this::mapToDTO).collect(Collectors.toList());
     }
 
+    @Override
+    public void topupTransaction(TopupRequestDTO request) {
+        String transactionId = UUID.randomUUID().toString();
+        log.info("Creating Topup Transaction ID: {}", transactionId);
+
+        Transactions transaction = new Transactions();
+        transaction.setTransactionId(transactionId);
+        transaction.setCreditAccountNumber(request.getAccountNumber());
+        transaction.setDebitAccountNumber("SYSTEM_TOPUP");
+        transaction.setAmount(request.getAmount());
+        transaction.setCurrency("IDR"); // Default currency
+        transaction.setStatus("PENDING");
+        transaction.setDateCreated(new Date());
+
+        transactionRepository.saveAndFlush(transaction);
+        saveTransactionHistory(transactionId, "PENDING");
+
+        try {
+            request.setTransactionId(transactionId);
+
+            log.info("Sending topup-account-req to Account Service for Tx: {}", transactionId);
+            ProducerRecord<String, Object> producerRecord = new ProducerRecord<>(topupAccountTopicReq, request);
+            RequestReplyFuture<String, Object, Object> replyFuture = topupReplyingKafkaTemplate.sendAndReceive(producerRecord);
+            ConsumerRecord<String, Object> consumerRecord = replyFuture.get(10, TimeUnit.SECONDS);
+
+            AccountResponseDTO response = objectMapper.convertValue(consumerRecord.value(), AccountResponseDTO.class);
+
+            if (response.getError() != null && !response.getError()) {
+                transaction.setStatus("SUCCESS");
+                saveTransactionHistory(transactionId, "SUCCESS");
+                log.info("Topup Transaction {} Success!", transactionId);
+            } else {
+                transaction.setStatus("FAILED");
+                saveTransactionHistory(transactionId, "FAILED");
+                log.error("Topup Transaction {} Failed at Account Service: {}", transactionId, response.getMessage());
+            }
+        } catch (Exception e) {
+            transaction.setStatus("FAILED");
+            saveTransactionHistory(transactionId, "FAILED");
+            log.error("Error communicating with Account Service for Topup Tx: {}", transactionId, e);
+        }
+
+        transactionRepository.save(transaction);
+    }
+
     private TransactionDTO mapToDTO(Transactions entity) {
         return new TransactionDTO(
                 entity.getTransactionId(),
