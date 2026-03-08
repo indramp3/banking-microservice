@@ -1,6 +1,5 @@
 package com.acount.service.repository;
 
-import com.acount.service.dto.AccountMasterDTO;
 import com.acount.service.entity.AccountMaster;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -8,6 +7,8 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
+
+import java.math.BigDecimal;
 
 @Repository
 public interface AccountMasterRepository extends JpaRepository<AccountMaster, String> {
@@ -22,4 +23,10 @@ public interface AccountMasterRepository extends JpaRepository<AccountMaster, St
             @Param("accountNumber") String accountNumber,
             Pageable pageable
     );
+
+    @Query("SELECT COUNT(a) FROM AccountMaster a")
+    long countTotalAccounts();
+
+    @Query("SELECT SUM(a.balance) FROM AccountMaster a")
+    BigDecimal sumTotalBalance();
 }

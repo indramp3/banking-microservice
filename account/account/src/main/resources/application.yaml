@@ -32,3 +32,7 @@ kafka:
     update-balance-resp: "update-balance-response"
     topup-account-req: "topup-account-request"
     topup-account-resp: "topup-account-response"
+    metrics-acc-req: "metrics-acc-request"
+    metrics-acc-resp: "metrics-acc-response"
+    health-acc-req: "health-acc-request"
+    health-acc-resp: "health-acc-response"

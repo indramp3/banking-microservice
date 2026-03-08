@@ -1,6 +1,6 @@
 package com.acount.service.listener;
 
-import com.acount.service.dto.AccountMasterDTO;
+import com.acount.service.dto.*;
 import com.acount.service.entity.AccountMaster;
 import com.acount.service.service.AccountService;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -12,14 +12,12 @@ import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import com.acount.service.dto.TransferRequestDTO;
 
 @Slf4j
 public class AccountListener {
 
     private final AccountService accountService;
     private final ObjectMapper objectMapper;
-
 
     public AccountListener(AccountService accountService, ObjectMapper objectMapper) {
         this.accountService = accountService;
@@ -156,6 +154,57 @@ public class AccountListener {
                         .build());
             } catch (Exception ex) {
                 return "{\"error\":true,\"message\":\"Failed to process error response\"}";
+            }
+        }
+    }
+
+    @KafkaListener(topics = "${kafka.topic.metrics-acc-req}", containerFactory = "kafkaListenerContainerFactory")
+    @SendTo
+    public String getAccountMetrics(Map<String, Object> message) {
+        try {
+            AccountMetricsDTO response = accountService.getMetrics();
+            return objectMapper.writeValueAsString(response);
+        } catch (Exception e) {
+            log.error("Failed to get account metrics from kafka listener", e);
+            try {
+                return objectMapper.writeValueAsString(AccountMetricsDTO.builder()
+                        .error(true)
+                        .message("Critical error getting account metrics: " + e.getMessage())
+                        .build());
+            } catch (Exception ex) {
+                return "{\"error\":true,\"message\":\"Critical system failure\"}";
+            }
+        }
+    }
+
+    @KafkaListener(topics = "${kafka.topic.health-acc-req}", containerFactory = "kafkaListenerContainerFactory")
+    @SendTo
+    public String getHealthPing(Map<String, Object> message) {
+        try {
+            Long timestampSent = null;
+            if (message.containsKey("timestampSent")) {
+                timestampSent = message.get("timestampSent") instanceof Number ?
+                        ((Number) message.get("timestampSent")).longValue() : null;
+            }
+
+            HealthResponseDTO response = accountService.checkHealth();
+            if (timestampSent != null) {
+                response.setTimestampSent(timestampSent);
+            }
+            response.setTimestampReceived(System.currentTimeMillis());
+
+            return objectMapper.writeValueAsString(response);
+        } catch (Exception e) {
+            log.error("Error processing health ping", e);
+            try {
+                return objectMapper.writeValueAsString(HealthResponseDTO.builder()
+                        .serviceName("AccountService")
+                        .status("ERROR")
+                        .error(true)
+                        .message(e.getMessage())
+                        .build());
+            } catch (Exception ex) {
+                return "{\"error\":true,\"status\":\"ERROR\"}";
             }
         }
     }

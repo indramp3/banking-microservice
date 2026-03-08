@@ -1,6 +1,8 @@
 package com.acount.service.service.impl;
 
 import com.acount.service.dto.AccountMasterDTO;
+import com.acount.service.dto.AccountMetricsDTO;
+import com.acount.service.dto.HealthResponseDTO;
 import com.acount.service.entity.AccountMaster;
 import com.acount.service.repository.AccountMasterRepository;
 import com.acount.service.service.AccountService;
@@ -170,6 +172,39 @@ public class AccountServiceImp implements AccountService {
                     .message("Topup failed: " + e.getMessage())
                     .build();
         }
+    }
+
+    @Override
+    public AccountMetricsDTO getMetrics() {
+        log.info("Fetching Account Metrics");
+        try {
+            long count = accountMasterRepository.countTotalAccounts();
+            java.math.BigDecimal sum = accountMasterRepository.sumTotalBalance();
+            if (sum == null) sum = java.math.BigDecimal.ZERO;
+
+            return AccountMetricsDTO.builder()
+                    .totalAccounts(count)
+                    .totalBalance(sum)
+                    .error(false)
+                    .message("Success")
+                    .build();
+        } catch (Exception e) {
+            log.error("Failed to fetch account metrics", e);
+            return AccountMetricsDTO.builder()
+                    .error(true)
+                    .message("Failed to retrieve metrics: " + e.getMessage())
+                    .build();
+        }
+    }
+
+    @Override
+    public HealthResponseDTO checkHealth() {
+        return HealthResponseDTO.builder()
+                .serviceName("AccountService")
+                .status("UP")
+                .error(false)
+                .message("AccountService is healthy")
+                .build();
     }
 
 

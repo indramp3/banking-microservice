@@ -1,6 +1,8 @@
 package com.acount.service.service;
 
 import com.acount.service.dto.AccountMasterDTO;
+import com.acount.service.dto.AccountMetricsDTO;
+import com.acount.service.dto.HealthResponseDTO;
 import com.acount.service.entity.AccountMaster;
 
 import java.util.List;
@@ -16,5 +18,9 @@ public interface AccountService {
     AccountMasterDTO.ResponseCreateAccount processTransfer(com.acount.service.dto.TransferRequestDTO transferRequest);
 
     AccountMasterDTO.ResponseCreateAccount processTopup(com.acount.service.dto.TopupRequestDTO topupRequest);
+
+    AccountMetricsDTO getMetrics();
+
+    HealthResponseDTO checkHealth();
 
 }
