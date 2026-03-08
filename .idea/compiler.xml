@@ -2,7 +2,7 @@
 <project version="4">
   <component name="CompilerConfiguration">
     <annotationProcessing>
-      <profile name="Annotation profile for monitoring" enabled="true">
+      <profile name="Annotation profile for account-service" enabled="true">
         <sourceOutputDir name="target/generated-sources/annotations" />
         <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
         <outputRelativeToContentRoot value="true" />
@@ -11,8 +11,8 @@
         </processorPath>
         <module name="service (1) (com.transaction)" />
         <module name="service (2) (com.transaction)" />
-        <module name="monitoring" />
         <module name="service (1) (com.acount)" />
+        <module name="monitoring" />
         <module name="microservice" />
         <module name="service" />
       </profile>
