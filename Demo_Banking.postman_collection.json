@@ -1,0 +1,321 @@
+{
+	"info": {
+		"_postman_id": "b919e1f-e969-4a30-8e35-447763767a3d",
+		"name": "Demo Banking API",
+		"description": "Koleksi API untuk aplikasi Demo Banking Berbasis Microservices.",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "Account",
+			"item": [
+				{
+					"name": "Create Account",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"nik\": \"1234567890\",\n    \"customerName\": \"John Doe\",\n    \"balance\": 1000000\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/account/create",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"account",
+								"create"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Search Account",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/account/search?nik=1234567890&accountNumber=12345&page=1&maxRow=10",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"account",
+								"search"
+							],
+							"query": [
+								{
+									"key": "nik",
+									"value": "1234567890"
+								},
+								{
+									"key": "accountNumber",
+									"value": "12345"
+								},
+								{
+									"key": "page",
+									"value": "1"
+								},
+								{
+									"key": "maxRow",
+									"value": "10"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Balance",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/account/balance?accountNumber=12345",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"account",
+								"balance"
+							],
+							"query": [
+								{
+									"key": "accountNumber",
+									"value": "12345"
+								}
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Transaction",
+			"item": [
+				{
+					"name": "Create Transaction (Transfer)",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"creditAccountNumber\": \"67890\",\n    \"debitAccountNumber\": \"12345\",\n    \"amount\": 50000,\n    \"currency\": \"IDR\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/transaction/create",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"transaction",
+								"create"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Transactions by Account",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/transaction/account?accountNumber=12345&page=1&maxRow=10",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"transaction",
+								"account"
+							],
+							"query": [
+								{
+									"key": "accountNumber",
+									"value": "12345"
+								},
+								{
+									"key": "page",
+									"value": "1"
+								},
+								{
+									"key": "maxRow",
+									"value": "10"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Transaction Detail",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/transaction/detail?transactionId=uuid-here",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"transaction",
+								"detail"
+							],
+							"query": [
+								{
+									"key": "transactionId",
+									"value": "uuid-here"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Transaction History",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/transaction/history?startDate=2023-01-01&endDate=2023-12-31&page=1&maxRow=10",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"transaction",
+								"history"
+							],
+							"query": [
+								{
+									"key": "startDate",
+									"value": "2023-01-01"
+								},
+								{
+									"key": "endDate",
+									"value": "2023-12-31"
+								},
+								{
+									"key": "page",
+									"value": "1"
+								},
+								{
+									"key": "maxRow",
+									"value": "10"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Topup",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"accountNumber\": \"12345\",\n    \"amount\": 100000\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/transaction/topup",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"transaction",
+								"topup"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Monitoring",
+			"item": [
+				{
+					"name": "Get Metrics",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/monitoring/metrics",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"monitoring",
+								"metrics"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Health",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/monitoring/health",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"monitoring",
+								"health"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		}
+	],
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		}
+	],
+	"variable": [
+		{
+			"key": "base_url",
+			"value": "http://localhost:8080",
+			"type": "string"
+		}
+	]
+}
