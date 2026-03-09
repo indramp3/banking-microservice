@@ -13,7 +13,7 @@ import java.math.BigDecimal;
 import java.util.Date;
 
 @Entity
-@Table(name = "transactions")
+@Table(name = "TRANSACTIONS")
 @Getter
 @Setter
 @NoArgsConstructor
